@@ -4,7 +4,7 @@ from sklearn.preprocessing import StandardScaler
 import time
 
 # Load the training dataset
-train_file_path = 'C:\\Users\\yourb\\OneDrive\\Documents\\NN\\NBA prediction\\NBA-NN-Prediction-\\filtered_dataset_with_team_win.csv'
+train_file_path = '/Users/malikfreeman/NN NBA/NBA-NN-Prediction-/filtered_dataset_with_team_win.csv'
 df_train = pd.read_csv(train_file_path)
 
 # Load the test dataset
@@ -38,7 +38,7 @@ model.compile(optimizer='adam',
 
 # Train the model and measure time
 start_time = time.time()
-history = model.fit(X_train_scaled, y_train, epochs=200, batch_size=32, validation_split=0.2, verbose=1)
+history = model.fit(X_train_scaled, y_train, epochs=30, batch_size=32, validation_split=0.1, verbose=1)
 end_time = time.time()
 
 # Calculate training time
