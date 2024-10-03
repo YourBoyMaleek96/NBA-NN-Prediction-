@@ -1,53 +1,34 @@
 import pandas as pd
+from sklearn.preprocessing import MinMaxScaler
 
 # Load the dataset
 file_path = 'C:\\Users\\yourb\\OneDrive\\Documents\\NN\\NBA prediction\\NBA-NN-Prediction-\\full training set 2018-2022.csv'
 df = pd.read_csv(file_path)
-
 # Convert the date column to datetime
 df['date'] = pd.to_datetime(df['date'], format='%m/%d/%Y')
 
 # Define the date range
-start_date = pd.to_datetime('2018-10-16')
-end_date = pd.to_datetime('2023-04-09')
+start_date = pd.to_datetime('10/16/2018')
+end_date = pd.to_datetime('04/09/2023')
 
-# Filter the dataset
+# Filter the dataset to include only regular season games and the specified date range
 df_filtered = df[(df['date'] >= start_date) & (df['date'] <= end_date) & (df['type'] == 'regular')]
 
-# Create a column to identify games
-df_filtered['game_id'] = df_filtered['date'].astype(str) + '_' + df_filtered['home'] + '_' + df_filtered['away']
+# Drop the unnecessary columns
+columns_to_drop = ['gameid', 'FTM', 'FTA', 'teamid', '3PM', '3PA', 'REB', 'TOV', 'PF','+/-', 'FGM', 'FGA', 'MIN']
+df_filtered = df_filtered.drop(columns=columns_to_drop)
 
-# Create an empty DataFrame to store results
-results = pd.DataFrame(columns=df_filtered.columns)
+# Select relevant columns for normalization
+columns_of_interest = ['PTS', 'FG%', '3P%', 'OREB', 'DREB', 'AST', 'STL', 'BLK','FT%']
 
-# Process each game
-for game_id, group in df_filtered.groupby('game_id'):
-    home_team_row = group[group['team'] == group['home'].values[0]]
-    away_team_row = group[group['team'] == group['away'].values[0]]
-    
-    if home_team_row.empty or away_team_row.empty:
-        continue  # Skip if any team data is missing
+# Initialize MinMaxScaler
+scaler = MinMaxScaler()
 
-    home_pts = home_team_row['PTS'].values[0]
-    away_pts = away_team_row['PTS'].values[0]
-    
-    # Determine the winner
-    if home_pts > away_pts:
-        home_team_row['win'] = 1
-        away_team_row['win'] = 0
-    else:
-        home_team_row['win'] = 0
-        away_team_row['win'] = 1
-    
-    # Append results to the DataFrame
-    results = pd.concat([results, home_team_row, away_team_row], ignore_index=True)
+# Fit and transform the columns that need normalization
+df_filtered[columns_of_interest] = scaler.fit_transform(df_filtered[columns_of_interest])
 
-# Select relevant columns
-columns_of_interest = ['date', 'home', 'away', 'team', 'PTS', 'FG%', '3P%', 'OREB', 'DREB', 'AST', 'STL', 'BLK', 'win']
-results = results[columns_of_interest]
+# Save or use the processed and normalized data
+df_filtered.to_csv('new filtered_normalized_dataset_with_team_win.csv', index=False)
 
-# Save or use the processed data
-results.to_csv('filtered_dataset_with_team_win.csv', index=False)
-
-# Display the first few rows of the filtered data
-print(results.head())
+# Display the first few rows of the filtered and normalized data
+print(df_filtered.head())
