@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.preprocessing import MinMaxScaler
 
 # Load the dataset
-file_path = 'C:\\Users\\yourb\\OneDrive\\Documents\\NN\\NBA prediction\\NBA-NN-Prediction-\\full training set 2018-2022.csv'
+file_path = 'C:\\Users\\MALIK.FREEMAN\\Desktop\\Malik SERN STUFF\\Grad school\\OOM\\NBA-NN-Prediction-\\full training set.csv'
 df = pd.read_csv(file_path)
 
 # Convert the date column to datetime
@@ -15,25 +15,50 @@ end_date = pd.to_datetime('04/14/2024')
 # Filter the dataset to include only regular season games and the specified date range
 df_filtered = df[(df['date'] >= start_date) & (df['date'] <= end_date) & (df['type'] == 'regular')].copy()
 
-# Create a 'win' column based on the maximum points scored in each game
-df_filtered.loc[:, 'win'] = df_filtered.groupby(['home', 'away'])['PTS'].transform(lambda x: (x == x.max()).astype(int))
+# Initialize an empty list to store matchup results along with statistics
+matchups = []
 
-# Select only the relevant columns for normalization and prediction
-df_relevant = df_filtered[['team', 'win']]
+# Iterate over the filtered data in steps of 2 to pair the teams that played in each game
+for i in range(0, len(df_filtered), 2):
+    row_home = df_filtered.iloc[i]
+    row_away = df_filtered.iloc[i + 1]
 
-# Select columns for normalization
-columns_of_interest = ['PTS', 'FG%', '3P%', 'OREB', 'DREB', 'AST', 'STL', 'BLK', 'FT%']
+    # Determine the winning team based on the 'win' column
+    if row_home['win'] == 1:
+        winner = row_home['team']
+    else:
+        winner = row_away['team']
 
-# Initialize MinMaxScaler
-scaler = MinMaxScaler()
+    # Store the matchup, the winning team, and the stats
+    matchups.append({
+        'home_team': row_home['team'],
+        'away_team': row_away['team'],
+        'PTS_home': row_home['PTS'],
+        'FG%_home': row_home['FG%'],
+        '3P%_home': row_home['3P%'],
+        'FT%_home': row_home['FT%'],
+        'OREB_home': row_home['OREB'],
+        'DREB_home': row_home['DREB'],
+        'AST_home': row_home['AST'],
+        'STL_home': row_home['STL'],
+        'BLK_home': row_home['BLK'],
+        'PTS_away': row_away['PTS'],
+        'FG%_away': row_away['FG%'],
+        '3P%_away': row_away['3P%'],
+        'FT%_away': row_away['FT%'],
+        'OREB_away': row_away['OREB'],
+        'DREB_away': row_away['DREB'],
+        'AST_away': row_away['AST'],
+        'STL_away': row_away['STL'],
+        'BLK_away': row_away['BLK'],
+        'winner': winner
+    })
 
-# Fit and transform the columns that need normalization using .loc
-df_filtered.loc[:, columns_of_interest] = scaler.fit_transform(df_filtered[columns_of_interest])
+# Create a DataFrame for the matchups with statistics
+df_matchups = pd.DataFrame(matchups)
 
-# Combine the relevant team and win data with normalized statistics
-final_test_data = df_filtered[['team', 'win'] + columns_of_interest]
+# Save the matchups with statistics to a CSV file
+output_file_path = 'C:\\Users\\MALIK.FREEMAN\\Desktop\\Malik SERN STUFF\\Grad school\\OOM\\NBA-NN-Prediction-\\fulltestdata.csv'
+df_matchups.to_csv(output_file_path, index=False)
 
-# Save the processed and normalized data to a CSV file
-final_test_data.to_csv('testdata.csv', index=False)
-
-print("Test data saved to 'testdata.csv'.")
+print(f"Matchup data with statistics and winners saved to '{output_file_path}'.")

@@ -1,6 +1,5 @@
-import pandas as pd 
+import pandas as pd
 import numpy as np
-from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import accuracy_score
 from tensorflow.keras.models import load_model
 
@@ -13,26 +12,15 @@ model_path = 'C:\\Users\\MALIK.FREEMAN\\Desktop\\Malik SERN STUFF\\Grad school\\
 model = load_model(model_path)
 
 # Prepare the features for prediction (remove 'winner' and other non-stat columns)
-features = test_data[['PTS_home', 'FG%_home', '3P%_home', 'FT%_home', 
-                      'OREB_home', 'DREB_home', 'AST_home', 'STL_home', 
-                      'BLK_home', 'PTS_away', 'FG%_away', '3P%_away', 
-                      'FT%_away', 'OREB_away', 'DREB_away', 'AST_away', 
-                      'STL_away', 'BLK_away']]
-
-# Normalize the test features using Min-Max scaling
-scaler = MinMaxScaler()
-features_scaled = scaler.fit_transform(features)
+features = test_data[['PTS_home', 'FG%_home', '3P%_home', 'FT%_home', 'OREB_home', 'DREB_home', 
+                      'AST_home', 'STL_home', 'BLK_home', 'PTS_away', 'FG%_away', '3P%_away', 
+                      'FT%_away', 'OREB_away', 'DREB_away', 'AST_away', 'STL_away', 'BLK_away']]
 
 # Predict the game outcomes (probabilities of winning)
-predictions = model.predict(features_scaled)
+predictions = model.predict(features)
 
 # Convert probabilities to binary predictions (0 for away team win, 1 for home team win)
-predicted_winners = np.where(predictions >= 0.5, 1, 0).flatten()  # Flatten the array here
-
-# Debugging: Print the shapes of the arrays
-print(f"Shape of predictions: {predictions.shape}")
-print(f"Shape of predicted_winners: {predicted_winners.shape}")
-print(f"Shape of test_data: {test_data.shape}")
+predicted_winners = np.where(predictions >= 0.5, 1, 0)
 
 # Map the predictions back to team names (home team wins if prediction is 1, else away team wins)
 test_data['predicted_winner'] = np.where(predicted_winners == 1, test_data['home_team'], test_data['away_team'])
